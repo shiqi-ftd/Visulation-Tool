@@ -27,6 +27,9 @@ public class VisApp implements ActionListener {
 	private Double[] min;
 	private String[] columnNamestring;
 	private String[] columnNamestringZ;
+	
+	private Double[] maxminXY;
+
 
 	// By default, choose the first column to be x-axis, y-axis and z-axis
 	private int x_index = 0;
@@ -148,15 +151,17 @@ public class VisApp implements ActionListener {
 		ActionListener xListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
 				x_index = columnNames.indexOf(jbX.getSelectedItem());
+				maxminXY = new Double[] { max[x_index],min[x_index],max[y_index],min[y_index] } ;
+
 				float xValues[] = new float[rows.size()];
 				float yValues[] = new float[rows.size()];
 				float zValues[] = new float[rows.size()];
-
+	
 				for (int irow = 0; irow < rows.size(); irow++) {
 					ArrayList<Double> row = rows.get(irow);
 					xValues[irow] = row.get(x_index).floatValue();
 					yValues[irow] = row.get(y_index).floatValue();
-					if( z_index > 0){
+					if( z_index >= 0){
 					zValues[irow] = (float) ((row.get(z_index) - min[z_index]) / (max[z_index] - min[z_index]));
 					} else
 						zValues[irow] = 1;
@@ -165,7 +170,7 @@ public class VisApp implements ActionListener {
 //					yValues[irow] = (float) ((row.get(y_index) - min[y_index]) / (max[y_index] - min[y_index]));
 				}
 //				visPanel.setData(xValues, yValues, columnNames.get(x_index), columnNames.get(y_index));
-				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index));
+				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
 			}
 		};
 		jbX.addActionListener(xListener);	
@@ -177,6 +182,8 @@ public class VisApp implements ActionListener {
 		ActionListener yListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
 				y_index = columnNames.indexOf(jbY.getSelectedItem());
+				maxminXY = new Double[] { max[x_index],min[x_index],max[y_index],min[y_index] } ;
+
 				float xValues[] = new float[rows.size()];
 				float yValues[] = new float[rows.size()];
 				float zValues[] = new float[rows.size()];
@@ -184,12 +191,12 @@ public class VisApp implements ActionListener {
 					ArrayList<Double> row = rows.get(irow);
 					xValues[irow] = row.get(x_index).floatValue();
 					yValues[irow] = row.get(y_index).floatValue();
-					if( z_index > 0){
+					if( z_index >= 0){
 					zValues[irow] = (float) ((row.get(z_index) - min[z_index]) / (max[z_index] - min[z_index]));
 					} else
 						zValues[irow] = 1;
 				}
-				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index));
+				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
 			}
 		};
 		jbY.addActionListener(yListener);		
@@ -202,6 +209,8 @@ public class VisApp implements ActionListener {
 		ActionListener zListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
 				z_index = columnNames.indexOf(jbZ.getSelectedItem());
+				maxminXY = new Double[] { max[x_index],min[x_index],max[y_index],min[y_index] } ;
+
 				float xValues[] = new float[rows.size()];
 				float yValues[] = new float[rows.size()];
 				float zValues[] = new float[rows.size()];				
@@ -209,12 +218,12 @@ public class VisApp implements ActionListener {
 					ArrayList<Double> row = rows.get(irow);
 					xValues[irow] = row.get(x_index).floatValue();
 					yValues[irow] = row.get(y_index).floatValue();
-					if( z_index > 0){
+					if( z_index >= 0){
 					zValues[irow] = (float) ((row.get(z_index) - min[z_index]) / (max[z_index] - min[z_index]));
 					} else
 						zValues[irow] = 1;
 				}
-				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index));
+				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
 			}
 		};
 		jbZ.addActionListener(zListener);
@@ -249,7 +258,7 @@ public class VisApp implements ActionListener {
 				yValues[i] = rand.nextFloat() * 600.f;
 			}
 
-			visPanel.setData(xValues, yValues, zValues, columnNames.get(x_index), columnNames.get(y_index));
+			visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
 		} else if (event.getActionCommand().equals("exit")) {
 			System.exit(0);
 		} else {
@@ -270,6 +279,7 @@ public class VisApp implements ActionListener {
 				jbY.setSelectedItem(cmdParam[1]);
 			}
 
+			maxminXY = new Double[] { max[x_index],min[x_index],max[y_index],min[y_index] } ;
 
 			float xValues[] = new float[rows.size()];
 			float yValues[] = new float[rows.size()];
@@ -279,7 +289,8 @@ public class VisApp implements ActionListener {
 				ArrayList<Double> row = rows.get(irow);
 				xValues[irow] = row.get(x_index).floatValue();
 				yValues[irow] = row.get(y_index).floatValue();
-				if( z_index > 0){
+
+				if( z_index >= 0){
 				zValues[irow] = (float) ((row.get(z_index) - min[z_index]) / (max[z_index] - min[z_index]));
 				} else
 					zValues[irow] = 1;
@@ -290,7 +301,7 @@ public class VisApp implements ActionListener {
 				// System.out.println(yValues[irow]);
 			}
 //			visPanel.setData(xValues, yValues, columnNames.get(x_index), columnNames.get(y_index));
-			visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index));
+			visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
 		}
 	}
 
