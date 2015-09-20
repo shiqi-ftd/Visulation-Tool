@@ -30,6 +30,9 @@ public class VisApp implements ActionListener {
 	
 	private Double[] maxminXY;
 
+	private ArrayList<Double> mean = new ArrayList<Double>();
+	private ArrayList<Double> deviation = new ArrayList<Double>();
+	private ArrayList<Integer[]> binCounter = new ArrayList<Integer[]>();
 
 	// By default, choose the first column to be x-axis, y-axis and z-axis
 	private int x_index = 0;
@@ -43,6 +46,17 @@ public class VisApp implements ActionListener {
 	private void CSVinitialize() throws Exception {
 		File f = new File("cars.csv");
 		CSVReader.readCSV(f, rows, columnNames);
+		
+		// Calculate the mean, deviation for each column
+		// Calculate the bin counter for each column
+		CSVReader.calMean(rows, CSVReader.rowsNum);
+		CSVReader.calDeviation(rows, CSVReader.rowsNum);
+		CSVReader.countBin(rows, CSVReader.rowsNum);
+		mean = CSVReader.mean;
+		deviation = CSVReader.deviation;
+		binCounter = CSVReader.binCounter;
+		
+		
 		StringBuffer buffer = new StringBuffer();
 
 		int len = rows.get(0).size();
@@ -79,7 +93,7 @@ public class VisApp implements ActionListener {
 
 	private void initialize() {
 		appFrame = new JFrame();
-		appFrame.setTitle("Visualizion Project1 By Shiqi Zhong");
+		appFrame.setTitle("Visualizion Project By Shiqi Zhong");
 		appFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		appFrame.setBounds(100, 100, 1400, 700);
 
@@ -171,6 +185,12 @@ public class VisApp implements ActionListener {
 				}
 //				visPanel.setData(xValues, yValues, columnNames.get(x_index), columnNames.get(y_index));
 				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
+				Double[] meanDev= new Double[4];
+				meanDev[0] = mean.get(x_index).doubleValue();
+				meanDev[1] = mean.get(y_index).doubleValue();
+				meanDev[2] = deviation.get(x_index).doubleValue();
+				meanDev[3] = deviation.get(y_index).doubleValue();				
+				visPanel.setStaticdata(meanDev, binCounter.get(x_index), binCounter.get(y_index));
 			}
 		};
 		jbX.addActionListener(xListener);	
@@ -197,6 +217,12 @@ public class VisApp implements ActionListener {
 						zValues[irow] = 1;
 				}
 				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
+				Double[] meanDev= new Double[4];
+				meanDev[0] = mean.get(x_index).doubleValue();
+				meanDev[1] = mean.get(y_index).doubleValue();
+				meanDev[2] = deviation.get(x_index).doubleValue();
+				meanDev[3] = deviation.get(y_index).doubleValue();				
+				visPanel.setStaticdata(meanDev, binCounter.get(x_index), binCounter.get(y_index));			
 			}
 		};
 		jbY.addActionListener(yListener);		
@@ -224,6 +250,12 @@ public class VisApp implements ActionListener {
 						zValues[irow] = 1;
 				}
 				visPanel.setData(xValues, yValues, zValues, columnNames.get(y_index), columnNames.get(x_index), maxminXY);
+				Double[] meanDev= new Double[4];
+				meanDev[0] = mean.get(x_index).doubleValue();
+				meanDev[1] = mean.get(y_index).doubleValue();
+				meanDev[2] = deviation.get(x_index).doubleValue();
+				meanDev[3] = deviation.get(y_index).doubleValue();				
+				visPanel.setStaticdata(meanDev, binCounter.get(x_index), binCounter.get(y_index));
 			}
 		};
 		jbZ.addActionListener(zListener);

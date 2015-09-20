@@ -13,9 +13,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
-
 import javax.swing.JPanel;
 
 public class VisPanel extends JPanel implements MouseListener, MouseMotionListener, ComponentListener {
@@ -25,7 +25,7 @@ public class VisPanel extends JPanel implements MouseListener, MouseMotionListen
 	// defines the region inside the plot axes
 	private Rectangle plotRectangle;
 	// defines a border around the plot
-	private int borderSize = 10;
+	private int borderSize = 40;
 	// shape of the data marks
 	private Shape dataShape = new Ellipse2D.Float(0.f, 0.f, 5.f, 5.f);
 
@@ -44,6 +44,11 @@ public class VisPanel extends JPanel implements MouseListener, MouseMotionListen
 
 	private Double[] maxminXY;
 
+	// Get the statistic data
+	private Double[] meanDev;
+	private Integer[] xbinCounter;
+	private Integer[] ybinCounter;
+
 	// Get the current dimensions of the plot region
 	int left;
 	int right;
@@ -54,6 +59,12 @@ public class VisPanel extends JPanel implements MouseListener, MouseMotionListen
 		addComponentListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
+	}
+
+	public void setStaticdata(Double[] meanDev, Integer[] xbinCounter, Integer[] ybinCounter) {
+		this.meanDev = meanDev;
+		this.xbinCounter = xbinCounter;
+		this.ybinCounter = ybinCounter;
 	}
 
 	// sets the data values and forces the panel to layout the boundaries and
@@ -201,22 +212,45 @@ public class VisPanel extends JPanel implements MouseListener, MouseMotionListen
 
 			// Label the variable names
 			// Position based on the real window size
-			g2.drawString(xAxis, -50, (bottom + top) / 2);
-			g2.drawString(yAxis, (-left + right) / 2, bottom + 5);
+			g2.drawString(xAxis, -50, (bottom + top) / 2 - 20);
+			g2.drawString(yAxis, (-left + right) / 2, bottom - 15);
 
 			// Label the max and min values
-			g2.drawString(maxminXY[2].toString(), -40, top);
-			g2.drawString(maxminXY[3].toString(), -40, bottom - 5);
-			g2.drawString(maxminXY[0].toString(), right - 310, bottom + 2);
-			g2.drawString(maxminXY[1].toString(), left - 295, bottom + 2);
+			g2.drawString(maxminXY[2].toString(), -40, top - 30);
+			g2.drawString(maxminXY[3].toString(), -40, bottom - 35);
+			g2.drawString(maxminXY[0].toString(), right - 345, bottom - 23);
+			g2.drawString(maxminXY[1].toString(), left - 330, bottom - 23);
 
-			// capture the mouse movement show the x and y value, set the maximum decimal digits to be 2
+			DecimalFormat df = new DecimalFormat("#.00");
+
+			// Label the mean
+			g2.drawString(" <-- Mean: " + meanDev[1].toString(), right - 270,
+					(int) (bottom - (bottom - top) * (meanDev[1] - maxminXY[3]) / (maxminXY[2] - maxminXY[3])) - 40);
+			g2.drawString("⇩ Mean" + meanDev[0].toString(),
+					(int) ((right - left) * (meanDev[0] - maxminXY[1]) / (maxminXY[0] - maxminXY[1])), top - 70);
+
+			// Label the 2 * standard deviation
+			Double a = meanDev[1] - 2 * meanDev[3];
+			g2.drawString("↲ 2*D: " + df.format(a), right - 270,
+					(int) (bottom - (bottom - top) * (a - maxminXY[3]) / (maxminXY[2] - maxminXY[3])) - 40);
+			a = meanDev[1] + 2 * meanDev[3];
+			g2.drawString("↰ 2*D: " + df.format(a), right - 270,
+					(int) (bottom - (bottom - top) * (a - maxminXY[3]) / (maxminXY[2] - maxminXY[3])) - 40);
+
+			Double b = meanDev[0] - 2 * meanDev[2];
+			g2.drawString("↱ 2*D:" + df.format(b),
+					(int) ((right - left) * (b - maxminXY[1]) / (maxminXY[0] - maxminXY[1])), top - 70);
+			b = meanDev[0] + 2 * meanDev[2];
+			g2.drawString("↰ 2*D:" + df.format(b),
+					(int) ((right - left) * (b - maxminXY[1]) / (maxminXY[0] - maxminXY[1])), top - 70);
+
+			// capture the mouse movement show the x and y value, set the
+			// maximum decimal digits to be 2
 			if (mousePoint != null) {
 				double x_value = (mousePoint.getX() - left) / (right - left) * (maxminXY[0] - maxminXY[1])
 						+ maxminXY[1];
 				double y_value = (mousePoint.getY() - bottom) / (top - bottom) * (maxminXY[2] - maxminXY[3])
 						+ maxminXY[3];
-				DecimalFormat df = new DecimalFormat("#.00");
 				g2.drawString(df.format(x_value) + " " + df.format(y_value), (int) (mousePoint.getX()) - 200,
 						(int) mousePoint.getY());
 			}
@@ -226,6 +260,35 @@ public class VisPanel extends JPanel implements MouseListener, MouseMotionListen
 			g2.setStroke(new BasicStroke(2.f));
 			g2.setColor(Color.LIGHT_GRAY);
 			g2.draw(plotRectangle);
+			
+			int xMaxbin = Integer.MIN_VALUE;
+			int yMaxbin = Integer.MIN_VALUE;
+			for (int i=0; i<20; i++) {
+				if (xbinCounter[i] > xMaxbin) {
+					xMaxbin = xbinCounter[i];
+				}
+				if (ybinCounter[i] > yMaxbin) {
+					yMaxbin = ybinCounter[i];
+				}
+			}
+			for (int i = 0; i < 20; i++) {
+				Rectangle2D horizonBar = new Rectangle2D.Float(left + (-left + right) / 20 * i + 5, top - 15,
+						(-left + right) / 20, 15);
+				Rectangle2D verticalBar = new Rectangle2D.Float(right, top + (-top + bottom) / 20 * i + 5, 15,
+						(-top + bottom) / 20);
+				float xDegree= (float) xbinCounter[i] / (float) xMaxbin;
+				float yDegree= (float) ybinCounter[19 - i] / (float) yMaxbin;
+				System.out.println(xDegree);
+				System.out.println(yDegree);
+
+				g2.setPaint (new Color((int) (255 * xDegree), 0 ,0));
+				g2.draw(horizonBar);
+				g2.fill(horizonBar);
+				g2.setPaint(new Color(0, (int) (255 * yDegree), 0));
+				g2.draw(verticalBar);
+				g2.fill(verticalBar);
+
+			}
 		}
 	}
 
